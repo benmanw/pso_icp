@@ -15,4 +15,6 @@ HEADERS += \
     particle.h \
     handstructure.h
 
+LIBS += /usr/local/lib/*.so
+
 CONFIG += c++11
