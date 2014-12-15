@@ -5,7 +5,7 @@ const double Particle::c1=2.8,
              Particle::epsilon=1,
              Particle::w=2.0/abs(2-c1-c2-sqrt((c1+c2)*(c1+c2-4)));
 
-const std::pair<double,double> * Particle::_param_ranges=HandStructure::getHandStructure()->param_range;
+const std::pair<double,double> * Particle::param_ranges=HandStructure::getHandStructure()->param_range;
 
 inline double Particle::map(double v,double old_dbound,double old_ubound,double new_dbound,double new_ubound){
     return (v-old_dbound)*(new_ubound-new_dbound)/(old_ubound-old_dbound)+new_dbound;
@@ -31,7 +31,7 @@ void Particle::reInit(cv::Mat last_best_position){
     double *p=position.ptr<double>();
     double *q=last_best_position.ptr<double>();
     for(int i=0;i<DEMENSION_OF_FREEDOM;i++){
-        *p=random(std::max(_param_ranges[i].first,*q-epsilon),std::min(_param_ranges[i].second,*q+epsilon));
+        *p=random(std::max(param_ranges[i].first,*q-epsilon),std::min(param_ranges[i].second,*q+epsilon));
         // TODO : gaussian function here
         p++; q++;
     }
@@ -41,8 +41,8 @@ void Particle::reInit(cv::Mat last_best_position){
 void Particle::checkBound(){
     double *p=position.ptr<double>();
     for(int i=0;i<DEMENSION_OF_FREEDOM;i++){
-        if(*p>_param_ranges[i].second) *p=_param_ranges[i].second;
-        if(*p<_param_ranges[i].first) *p=_param_ranges[i].first;
+        if(*p>param_ranges[i].second) *p=param_ranges[i].second;
+        if(*p<param_ranges[i].first) *p=param_ranges[i].first;
         p++;
     }
 }
@@ -52,14 +52,14 @@ Particle::Particle(){
     position.create(DEMENSION_OF_FREEDOM,1,CV_64F);
     double *p=position.ptr<double>();
     for(int i=0;i<DEMENSION_OF_FREEDOM;i++){
-        *p=random(_param_ranges[i].first,_param_ranges[i].second);
+        *p=random(param_ranges[i].first,param_ranges[i].second);
         p++;
     }
     hist_best_cost=COST_INF;
 }
 
 void Particle::calcCost(const cv::Mat &RGB, const cv::Mat &depth, const cv::Mat &skin){
-    cost=costFunction(RGB,depth,skin,position);
+    cost=CostFunction::costFunction(RGB,depth,skin,position);
     if(cost<hist_best_cost){
         hist_best_position=position.clone();
         hist_best_cost=cost;

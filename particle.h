@@ -10,19 +10,19 @@
 class Particle
 {
     static const double c1,c2,epsilon,w;
-    static const std::pair<double,double> *_param_ranges;
-
     cv::Mat velocity;
 
 public:
     cv::Mat position, hist_best_position;
     double cost, hist_best_cost;
 
+    static const std::pair<double,double> *param_ranges;
+
+    static inline double map(double v,double old_dbound,double old_ubound,double new_dbound,double new_ubound);
+
+    static inline double random(double ubound,double dbound);
+
 private:
-
-    inline double map(double v,double old_dbound,double old_ubound,double new_dbound,double new_ubound);
-
-    inline double random(double ubound,double dbound);
 
     bool equal(const cv::Mat &a,const cv::Mat &b);
 
