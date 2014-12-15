@@ -55,7 +55,7 @@ void makeCostFunctionParams(){
     }
 }
 
-cv::Mat drawCostFunction(){
+cv::Mat drawCostFunction(std::pair<double,double> *global_best_point=NULL){
 
     double imax=-COST_INF,imin=COST_INF;
     cv::Mat res(HEIGHT,WIDTH,CV_8UC3);
@@ -64,7 +64,13 @@ cv::Mat drawCostFunction(){
         for(int j=0;j<WIDTH;j++){
             double cost=CostFunction::costFunction(cv::Mat(),cv::Mat(),cv::Mat(),d2Mat(imagePos2d(i,j)));
             imax=max(imax,cost);
-            imin=min(imin,cost);
+            if(cost<imin){
+                imin=cost;
+                if(global_best_point!=NULL){
+                    global_best_point->first=i;
+                    global_best_point->second=j;
+                }
+            }
         }
     }
     cout<<"Real max: "<<imax<<endl;
@@ -95,7 +101,8 @@ int main(){
 
         makeCostFunctionParams();
 
-        cv::Mat map=drawCostFunction();
+        std::pair<double,double> global_best_point;
+        cv::Mat map=drawCostFunction(&global_best_point);
 
         PSO_ICP solver;
         cv::Mat best_point=solver.solve(cv::Mat(),cv::Mat(),cv::Mat());
@@ -103,7 +110,8 @@ int main(){
 
         std::pair<double,double> myPoint=d2imagePos(mat2d(best_point));
 
-        cv::circle(map,cv::Point2d(myPoint.second,myPoint.first),3,cv::Scalar::all(255));
+        cv::circle(map,cv::Point2d(global_best_point.second,global_best_point.first),3,cv::Scalar::all(255),3);
+        cv::circle(map,cv::Point2d(myPoint.second,myPoint.first),3,cv::Scalar(255,0,0),2);
 
         imshow("map",map);
 
