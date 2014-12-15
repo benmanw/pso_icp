@@ -13,7 +13,7 @@
     #define DEMENSION_OF_FREEDOM 26
 #else
     #define DEMENSION_OF_FREEDOM 2
-    #define PEAKS_NUM 4
+    #define PEAKS_NUM 8
 #endif
 
 class CostFunction{

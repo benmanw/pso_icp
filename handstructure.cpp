@@ -5,8 +5,8 @@
 HandStructure::HandStructure()
 {
     for(int i=0;i<DEMENSION_OF_FREEDOM;i++){
-        param_range[i].first=-PI;
-        param_range[i].second=PI;
+        param_range[i].first=-3*PI;
+        param_range[i].second=3*PI;
     }
 
     // TODO: set up the properties

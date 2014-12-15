@@ -91,21 +91,26 @@ int main(){
 
     // init
     srand(time(0));
-    makeCostFunctionParams();
+    while(true){
 
-    cv::Mat map=drawCostFunction();
+        makeCostFunctionParams();
 
-    PSO_ICP solver;
-    cv::Mat best_point=solver.solve(cv::Mat(),cv::Mat(),cv::Mat());
-    cout<<"Best Found Solution: "<<CostFunction::costFunction(cv::Mat(),cv::Mat(),cv::Mat(),best_point)<<endl;
+        cv::Mat map=drawCostFunction();
 
-    std::pair<double,double> myPoint=d2imagePos(mat2d(best_point));
+        PSO_ICP solver;
+        cv::Mat best_point=solver.solve(cv::Mat(),cv::Mat(),cv::Mat());
+        cout<<"Best Found Solution: "<<CostFunction::costFunction(cv::Mat(),cv::Mat(),cv::Mat(),best_point)<<endl;
 
-    cv::circle(map,cv::Point2d(myPoint.second,myPoint.first),3,cv::Scalar::all(255));
+        std::pair<double,double> myPoint=d2imagePos(mat2d(best_point));
 
-    imshow("map",map);
+        cv::circle(map,cv::Point2d(myPoint.second,myPoint.first),3,cv::Scalar::all(255));
 
-    waitKey();
+        imshow("map",map);
+
+        char c=cv::waitKey(10);
+        if(c=='q') break;
+
+    }
     return 0;
 }
 
