@@ -13,7 +13,8 @@ HEADERS += \
     pso_icp.h \
     costfunction.h \
     particle.h \
-    handstructure.h
+    handstructure.h \
+    DebugTimer.hpp
 
 LIBS += /usr/local/lib/*.so
 

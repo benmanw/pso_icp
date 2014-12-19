@@ -1,5 +1,6 @@
 #include <iostream>
 #include <time.h>
+#include "DebugTimer.hpp"
 
 #include "pso_icp.h"
 
@@ -97,28 +98,47 @@ int main(){
 
     // init
     srand(time(0));
+    Timer t;
     while(true){
 
         makeCostFunctionParams();
 
         std::pair<double,double> global_best_point;
-        cv::Mat map=drawCostFunction(&global_best_point);
+        //cv::Mat map=drawCostFunction(&global_best_point);
 
         PSO_ICP solver;
         cv::Mat best_point=solver.solve(cv::Mat(),cv::Mat(),cv::Mat());
         cout<<"Best Found Solution: "<<CostFunction::costFunction(cv::Mat(),cv::Mat(),cv::Mat(),best_point)<<endl;
 
-        std::pair<double,double> myPoint=d2imagePos(mat2d(best_point));
+        //std::pair<double,double> myPoint=d2imagePos(mat2d(best_point));
 
-        cv::circle(map,cv::Point2d(global_best_point.second,global_best_point.first),3,cv::Scalar::all(255),3);
-        cv::circle(map,cv::Point2d(myPoint.second,myPoint.first),3,cv::Scalar(255,0,0),2);
+        //cv::circle(map,cv::Point2d(global_best_point.second,global_best_point.first),3,cv::Scalar::all(255),3);
+        //cv::circle(map,cv::Point2d(myPoint.second,myPoint.first),3,cv::Scalar(255,0,0),2);
 
-        imshow("map",map);
+        //imshow("map",map);
 
-        char c=cv::waitKey(10);
-        if(c=='q') break;
+        //char c=cv::waitKey(10);
+        //if(c=='q') break;
+
+        t.out(string(" "));
 
     }
     return 0;
 }
 
+// ====== TODO
+
+// drop #define PSO_ICP_DEBUG in costfunction.h
+// modify CostFunction::costFunction()
+// add #include "pso_icp.h"
+
+/* Code:
+
+PSO_ICP solver;
+while(running){
+    // get rgb,depth,skin
+    cv::Mat best_point=solver.solve(rgb,depth,skin); // 26x1 Mat
+    // do something
+}
+
+*/
