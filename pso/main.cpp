@@ -43,7 +43,7 @@ pair<double,double> imagePos2d(double x,double y){
 pair<double,double> d2imagePos(pair<double,double> d){
     return make_pair<double,double>(
                 Particle::map(d.first,Particle::param_ranges[0][0],Particle::param_ranges[0][1],0,HEIGHT),
-                Particle::map(d.second, Particle::param_ranges[1][0],Particle::param_ranges[1][0],0,WIDTH)
+                Particle::map(d.second, Particle::param_ranges[1][0],Particle::param_ranges[1][1],0,WIDTH)
             );
 };
 
@@ -107,11 +107,14 @@ int main(){
         cv::Mat best_point = solver.solve(); // get the solution from PSO
 
         // calc the cost of the solution and output
-        cout << "Best Found Solution: " << costFunc.costFunction(best_point) << endl;
+        cout << "The cost of the found solution: " << costFunc.costFunction(best_point) << endl;
 
         // visualize the result
         std::pair<double,double> myPoint = d2imagePos(mat2d(best_point));
+
+        // white : real global best one
         cv::circle(map,cv::Point2d(global_best_point.second,global_best_point.first),3,cv::Scalar::all(255),3);
+        // blue : the found one
         cv::circle(map,cv::Point2d(myPoint.second,myPoint.first),3,cv::Scalar(255,0,0),2);
 
         imshow("map", map);

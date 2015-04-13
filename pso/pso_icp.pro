@@ -14,8 +14,6 @@ HEADERS += \
     icostfunction.h \
     costfunctiondemo.h
 
-INCLUDEPATH += D:/openCV/build/include
-
-LIBS += D:/openCV/build/x86/vc12/bin/*d.dll
+LIBS += /usr/local/lib/*.so
 
 CONFIG += c++11
