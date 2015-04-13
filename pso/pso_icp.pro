@@ -5,17 +5,17 @@ CONFIG -= qt
 
 SOURCES += main.cpp \
     pso_icp.cpp \
-    costfunction.cpp \
     particle.cpp \
-    handstructure.cpp
+    costfunctiondemo.cpp
 
 HEADERS += \
     pso_icp.h \
-    costfunction.h \
     particle.h \
-    handstructure.h \
-    DebugTimer.hpp
+    icostfunction.h \
+    costfunctiondemo.h
 
-LIBS += /usr/local/lib/*.so
+INCLUDEPATH += D:/openCV/build/include
+
+LIBS += D:/openCV/build/x86/vc12/bin/*d.dll
 
 CONFIG += c++11

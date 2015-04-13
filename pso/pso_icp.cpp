@@ -1,13 +1,14 @@
 #include "pso_icp.h"
 
-PSO_ICP::PSO_ICP():
+PSO_ICP::PSO_ICP(ICostFunction *costFunc):
     particle_num(64),
     kmeans_k(4),
     kmeans_generation(10),
     generation(30)
 {
     reInit_flag=false;
-    particles=new Particle[particle_num];
+    for(int i=0; i<particle_num; i++)
+        particles.emplace_back(costFunc);
     swarm_best_position=new std::pair<double, cv::Mat> [kmeans_k];
     kmeans_centroid=new cv::Mat [kmeans_k];
     swarm_id_of_particles=new int [particle_num];
@@ -15,7 +16,6 @@ PSO_ICP::PSO_ICP():
 
 PSO_ICP::~PSO_ICP()
 {
-    delete [] particles;
     delete [] swarm_best_position;
     delete [] swarm_id_of_particles;
     delete [] kmeans_centroid;
@@ -23,9 +23,9 @@ PSO_ICP::~PSO_ICP()
 
 void PSO_ICP::kmeans_set_swarm_id(){
     for(int j=0;j<particle_num;j++){
-        double dist=COST_INF;
-        for(int i=0;i<kmeans_k;i++){
-            cv::Mat diff=particles[j].position-kmeans_centroid[i];
+        double dist = COST_INF;
+        for(int i=0; i<kmeans_k; i++){
+            cv::Mat diff = particles[j].position-kmeans_centroid[i];
             double tmp=diff.dot(diff);
             if(tmp<dist){
                 dist=tmp;
@@ -40,7 +40,7 @@ void PSO_ICP::kmeans_update_centroid(){
     int *counter=new int[kmeans_k];
     for(int i=0;i<kmeans_k;++i){
         counter[i]=0;
-        new_kmeans_centroid[i]=cv::Mat(DEMENSION_OF_FREEDOM,1,CV_64F,cv::Scalar::all(0));
+        new_kmeans_centroid[i] = cv::Mat(DIMENSION_OF_FREEDOM,1,CV_64F,cv::Scalar::all(0));
     }
     for(int j=0;j<particle_num;j++){
         counter[swarm_id_of_particles[j]]++;
@@ -76,7 +76,7 @@ void PSO_ICP::kmeans(){
     }
 }
 
-cv::Mat PSO_ICP::solve(const cv::Mat &RGB, const cv::Mat &depth, const cv::Mat &skin){
+cv::Mat PSO_ICP::solve() {
 
     if(reInit_flag){
         for(int i=0;i<particle_num;i++){
@@ -87,7 +87,7 @@ cv::Mat PSO_ICP::solve(const cv::Mat &RGB, const cv::Mat &depth, const cv::Mat &
     }
 
     for(int j=0;j<particle_num;j++){
-        particles[j].calcCost(RGB,depth,skin);
+        particles[j].calcCost();
     }
 
     for(int i=0;i<generation;i++){
@@ -114,7 +114,7 @@ cv::Mat PSO_ICP::solve(const cv::Mat &RGB, const cv::Mat &depth, const cv::Mat &
 
         for(int j=0;j<particle_num;j++){
             cv::Mat &swarm_global_best_position=swarm_best_position[swarm_id_of_particles[j]].second;
-            particles[j].update(swarm_global_best_position,RGB,depth,skin);
+            particles[j].update(swarm_global_best_position);
         }
 
     }
