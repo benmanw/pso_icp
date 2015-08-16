@@ -2,6 +2,7 @@
 #include <time.h>
 
 #include "costfunctiondemo.h"
+#include "paramsdemo.h"
 #include "pso_icp.h"
 
 using namespace std;
@@ -23,32 +24,30 @@ inline pair<double,double> mat2d(const Mat &a){
     return res;
 }
 
-cv::Mat d2Mat(const pair<double,double> &d2){
+ParamsDemo d2Mat(const pair<double,double> &d2){
     double x=d2.first,y=d2.second;
-    cv::Mat res(2,1,CV_64F);
-    double *p=res.ptr<double>();
-    *p=x;
-    p++;
-    *p=y;
-    return res;
+	vector<double> res;
+	res.emplace_back(x);
+	res.emplace_back(y);
+	return ParamsDemo(res);
 }
 
 pair<double,double> imagePos2d(double x,double y){
     return make_pair<double,double>(
-                Particle::map(x,0,HEIGHT,Particle::param_ranges[0][0],Particle::param_ranges[0][1]),
-                Particle::map(y,0,WIDTH, Particle::param_ranges[1][0],Particle::param_ranges[1][1])
-            );
+		Particle<ParamsDemo>::map(x, 0, HEIGHT, ParamsDemo::paramRange[0].first, ParamsDemo::paramRange[0].second),
+		Particle<ParamsDemo>::map(y, 0, WIDTH, ParamsDemo::paramRange[1].first, ParamsDemo::paramRange[1].second)
+    );
 }
 
 pair<double,double> d2imagePos(pair<double,double> d){
     return make_pair<double,double>(
-                Particle::map(d.first,Particle::param_ranges[0][0],Particle::param_ranges[0][1],0,HEIGHT),
-                Particle::map(d.second, Particle::param_ranges[1][0],Particle::param_ranges[1][1],0,WIDTH)
-            );
+		Particle<ParamsDemo>::map(d.first, ParamsDemo::paramRange[0].first, ParamsDemo::paramRange[0].second, 0, HEIGHT),
+		Particle<ParamsDemo>::map(d.second, ParamsDemo::paramRange[1].first, ParamsDemo::paramRange[1].second, 0, WIDTH)
+    );
 };
 
 // iterate all pixels to draw the costFunction
-cv::Mat drawCostFunction(ICostFunction *costFunc, std::pair<double,double> *global_best_point=NULL){
+cv::Mat drawCostFunction(CostFunctionDemo *costFunc, std::pair<double,double> *global_best_point=NULL){
 
     double imax = -COST_INF, imin = COST_INF;
     cv::Mat res(HEIGHT,WIDTH,CV_8UC3);
@@ -71,7 +70,7 @@ cv::Mat drawCostFunction(ICostFunction *costFunc, std::pair<double,double> *glob
     for(int i=0;i<HEIGHT;i++){
         for(int j=0;j<WIDTH;j++){
             double cost = costFunc->costFunction(d2Mat(imagePos2d(i,j)));
-            cost = Particle::map(cost,imin,imax,0,255);
+            cost = Particle<ParamsDemo>::map(cost,imin,imax,0,255);
             if((saturate_cast<uchar>(cost)%30)!=0){
                 p[0]=0;//Particle::map(i,0,HEIGHT,0,255);
                 p[1]=saturate_cast<uchar>(255-cost);
@@ -102,12 +101,14 @@ int main(){
         // visualize the costFunction
         cv::Mat map = drawCostFunction(&costFunc, &global_best_point);
 
-        PSO_ICP solver(&costFunc); // build a PSO solver with the costFunc
+        PSO_ICP<ParamsDemo> solver(&costFunc); // build a PSO solver with the costFunc
 
-        cv::Mat best_point = solver.solve(); // get the solution from PSO
+		ParamsDemo _best_point = solver.solve(); // get the solution from PSO
+
+		cv::Mat best_point = _best_point.toMat();
 
         // calc the cost of the solution and output
-        cout << "The cost of the found solution: " << costFunc.costFunction(best_point) << endl;
+        cout << "The cost of the found solution: " << costFunc.costFunction(_best_point) << endl;
 
         // visualize the result
         std::pair<double,double> myPoint = d2imagePos(mat2d(best_point));
@@ -120,7 +121,7 @@ int main(){
         imshow("map", map);
 
         // press q to exit
-        char c = cv::waitKey(10);
+        char c = cv::waitKey();
         if(c == 'q') break;
 
     }

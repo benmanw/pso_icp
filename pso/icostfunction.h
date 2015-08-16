@@ -1,15 +1,18 @@
-#ifndef ICOSTFUNCTION_H
-#define ICOSTFUNCTION_H
+#ifndef COSTFUNCTION_H
+#define COSTFUNCTION_H
 
-#define COST_INF 9e60
+#include <iostream>
+#include <cmath>
+#include <vector>
 
-#include <opencv2/opencv.hpp>
+#include "IParams.h"
 
+template <typename _ParamsType>
 class ICostFunction {
+	typedef _ParamsType ParamsType;
 public:
-    virtual double costFunction(const cv::Mat& position) {
-        throw "ICostFunction::costFunction() Called - You must implement this method in child class.";
-    }
+	virtual double costFunction(const _ParamsType&) = 0;
 };
 
-#endif // ICOSTFUNCTION_H
+
+#endif

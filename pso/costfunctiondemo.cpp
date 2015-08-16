@@ -15,10 +15,10 @@ CostFunctionDemo::CostFunctionDemo() {
     // some code to randomize the params of the made-up cost function
     Fcenters = new cv::Mat[PEAKS_NUM];
     for(int i=0; i<PEAKS_NUM; i++){
-        Fcenters[i] = cv::Mat(DIMENSION_OF_FREEDOM, 1, CV_64F);
+		Fcenters[i] = cv::Mat(ParamsType::dimension_of_freedom, 1, CV_64F);
         double *p = Fcenters[i].ptr<double>();
-        for(int j=0; j<DIMENSION_OF_FREEDOM; j++, p++){
-            *p = random(0, Particle::param_ranges[j][1]);
+		for (int j = 0; j<ParamsType::dimension_of_freedom; j++, p++){
+			*p = random(ParamsType::paramRange[j].first, ParamsType::paramRange[j].second);
         }
     }
 }
@@ -33,7 +33,12 @@ double CostFunctionDemo::peak(const cv::Mat &x, const cv::Mat &center){
 }
 
 // a made-up cost function demo
-double CostFunctionDemo::costFunction(const cv::Mat &position){
+double CostFunctionDemo::costFunction(const ParamsDemo& params){
+	cv::Mat_<double> position;
+	for (auto i : params.params) {
+		position.push_back(i);
+	}
+	position = position.reshape(1, params.params.size());
     double cost = 0;
     for(int i=0 ;i<PEAKS_NUM; i++){
         cost += peak(position,Fcenters[i]);
