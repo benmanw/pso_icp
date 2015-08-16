@@ -11,7 +11,7 @@
 
 template <typename ParamsType>
 class Particle {
-    static const double c1,c2,epsilon,w;
+    static const double c1, c2, epsilon, w, pr;
     cv::Mat velocity;
 	ICostFunction<ParamsType> *_costFunc;
 
@@ -32,6 +32,7 @@ public:
 	Particle(ICostFunction<ParamsType> *costFunc);
     void calcCost();
     void reInit(cv::Mat last_best_position);
+	void random_position(double pr);
     void update(const cv::Mat& global_best_position);
 };
 
@@ -39,10 +40,11 @@ public:
 // the config of the algorithm --------------
 
 template <typename ParamsType>
-const double Particle<ParamsType>::c1 = 2.8,
-	Particle<ParamsType>::c2 = 1.3,
-	Particle<ParamsType>::epsilon = 1,
-	Particle<ParamsType>::w = 2.0 / abs(2 - c1 - c2 - sqrt((c1 + c2)*(c1 + c2 - 4)));
+const double Particle<ParamsType>::c1 = 1.4955,
+	Particle<ParamsType>::c2 = 1.4955,
+	Particle<ParamsType>::epsilon = 0.25,
+	Particle<ParamsType>::w = 0.5,
+	Particle<ParamsType>::pr = exp(-2) / ParamsType::dimension_of_freedom;
 
 // config end -------------------------------
 
@@ -67,15 +69,24 @@ bool Particle<ParamsType>::equal(const cv::Mat &a, const cv::Mat &b){
 }
 
 template <typename ParamsType>
+void Particle<ParamsType>::random_position(double pr) {
+	double *p = position.ptr<double>();
+	for (int i = 0; i<ParamsType::dimension_of_freedom; i++){
+		if (random(0, 1) < pr)
+			*p = random(ParamsType::paramRange[i].first, ParamsType::paramRange[i].second);
+		p++;
+	}
+}
+
+template <typename ParamsType>
 void Particle<ParamsType>::reInit(cv::Mat last_best_position){
 	velocity = cv::Mat(ParamsType::dimension_of_freedom, 1, CV_64F, cv::Scalar::all(0)); // reset velocity
 	if (equal(position, last_best_position)) return;  // copy the best particle to next frame
 	if (random(0, 1) <= 0.25) return; // copy 1/4 particles to next frame
 	double *p = position.ptr<double>();
 	double *q = last_best_position.ptr<double>();
-	for (int i = 0; i<ParamsType::dimension_of_freedom; i++){
+	for (int i = 0; i<ParamsType::dimension_of_freedom; i++, p++, q++){
 		*p = random(std::max(ParamsType::paramRange[i].first, *q - epsilon), std::min(ParamsType::paramRange[i].second, *q + epsilon));
-		p++; q++;
 	}
 	hist_best_cost = COST_INF;
 }
@@ -92,15 +103,11 @@ void Particle<ParamsType>::checkBound(){
 
 template <typename ParamsType>
 Particle<ParamsType>::Particle(ICostFunction<ParamsType> *costFunc) :
-_costFunc(costFunc)
+	_costFunc(costFunc)
 {
 	velocity = cv::Mat(ParamsType::dimension_of_freedom, 1, CV_64F, cv::Scalar::all(0));
 	position.create(ParamsType::dimension_of_freedom, 1, CV_64F);
-	double *p = position.ptr<double>();
-	for (int i = 0; i<ParamsType::dimension_of_freedom; i++){
-		*p = random(ParamsType::paramRange[i].first, ParamsType::paramRange[i].second);
-		p++;
-	}
+	random_position(1.1);
 	hist_best_cost = COST_INF;
 }
 
@@ -117,9 +124,10 @@ void Particle<ParamsType>::calcCost(){
 template <typename ParamsType>
 void Particle<ParamsType>::update(const cv::Mat& global_best_position){
 	position = position + velocity;
+	random_position(pr); // prPSO
 	checkBound();
 	calcCost();
-	velocity = (velocity + (global_best_position - position)*c1*random(0, 1) + (hist_best_position - position)*c2*random(0, 1))*w;
+	velocity = velocity*w + (global_best_position - position)*c1*random(0, 1) + (hist_best_position - position)*c2*random(0, 1);
 }
 
 

@@ -37,10 +37,10 @@ public:
 
 template <typename ParamsType>
 PSO_ICP<ParamsType>::PSO_ICP(ICostFunction<ParamsType> *costFunc) :
-particle_num(64),
-kmeans_k(4),
-kmeans_generation(10),
-generation(30)
+	particle_num(32),
+	kmeans_k(3),
+	kmeans_generation(10),
+	generation(20)
 {
 	reInit_flag = false;
 	for (int i = 0; i<particle_num; i++)
@@ -51,8 +51,7 @@ generation(30)
 }
 
 template <typename ParamsType>
-PSO_ICP<ParamsType>::~PSO_ICP()
-{
+PSO_ICP<ParamsType>::~PSO_ICP() {
 	delete[] swarm_best_position;
 	delete[] swarm_id_of_particles;
 	delete[] kmeans_centroid;
@@ -121,11 +120,9 @@ template <typename ParamsType>
 cv::Mat PSO_ICP<ParamsType>::_solve() {
 
 	if (reInit_flag){
-		for (int i = 0; i<particle_num; i++){
+		for (int i = 0; i<particle_num; i++)
 			particles[i].reInit(last_best_position);
-		}
-	}
-	else{
+	} else {
 		reInit_flag = true;
 	}
 
@@ -133,29 +130,25 @@ cv::Mat PSO_ICP<ParamsType>::_solve() {
 		particles[j].calcCost();
 	}
 
-	for (int i = 0; i<generation; i++){
+	for (int j = 0; j<kmeans_k; j++){
+		swarm_best_position[j].first = COST_INF;
+	}
 
-		// TODO: add AICP Algorithm here
+	for (int i = 0; i<generation; i++){
 
 		kmeans();
 
-		// then find the best particle in each swarm/cluster
-
-		for (int j = 0; j<kmeans_k; j++){
-			swarm_best_position[j].first = COST_INF;
-		}
-
-		for (int j = 0; j<particle_num; j++){
+		// find the best particle in each swarm/cluster
+		for (int j = 0; j < particle_num; j++) {
 			double &best_cost = swarm_best_position[swarm_id_of_particles[j]].first;
-			if (best_cost>particles[j].cost){
+			if (best_cost > particles[j].cost) {
 				best_cost = particles[j].cost;
 				swarm_best_position[swarm_id_of_particles[j]].second = particles[j].position.clone();
 			}
 		}
 
 		// update the stat of particles
-
-		for (int j = 0; j<particle_num; j++){
+		for (int j = 0; j < particle_num; j++) {
 			cv::Mat &swarm_global_best_position = swarm_best_position[swarm_id_of_particles[j]].second;
 			particles[j].update(swarm_global_best_position);
 		}
@@ -165,15 +158,14 @@ cv::Mat PSO_ICP<ParamsType>::_solve() {
 	// find the real global best particle in history
 
 	best_cost = COST_INF;
-	for (int j = 0; j<particle_num; j++){
-		if (best_cost>particles[j].hist_best_cost){
-			best_cost = particles[j].hist_best_cost;
-			last_best_position = particles[j].hist_best_position.clone();
+	for (int j = 0; j<kmeans_k; j++) {
+		if (swarm_best_position[j].first < best_cost) {
+			best_cost = swarm_best_position[j].first;
+			last_best_position = swarm_best_position[j].second.clone();
 		}
 	}
 
 	return last_best_position;
-
 }
 
 template <typename ParamsType>
