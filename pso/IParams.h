@@ -8,6 +8,8 @@
 class IParams {
 public:
     std::vector<double> params;
+
+	// paramRange and the constructors is needed to be overrided(re-declared) in the children classes.
 	static std::vector<std::pair<double, double> > paramRange;
 
 	IParams();
