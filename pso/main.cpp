@@ -3,7 +3,7 @@
 
 #include "costfunctiondemo.h"
 #include "paramsdemo.h"
-#include "pso_icp.h"
+#include "pso.h"
 
 using namespace std;
 using namespace cv;
@@ -101,7 +101,7 @@ int main(){
         // visualize the costFunction
         cv::Mat map = drawCostFunction(&costFunc, &global_best_point);
 
-        PSO_ICP<ParamsDemo> solver(&costFunc); // build a PSO solver with the costFunc
+        Pso<CostFunctionDemo> solver(costFunc); // build a PSO solver with the costFunc
 
 		ParamsDemo _best_point = solver.solve(); // get the solution from PSO
 
